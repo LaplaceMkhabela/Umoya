@@ -8,7 +8,7 @@
 | 1   | Foundation                   | ✅ Done        | Repo layout, Foundry shell + `IYieldStrategy`, Next.js shell, Base Sepolia wagmi config, `tsc` green |
 | 2   | Core pool accounting         | ✅ Done        | `GroupStakingPool` + `PoolFactory` + `MockYieldStrategy`, 13/13 Foundry tests green (forge 1.8.3) |
 | 3   | Frontend (live reads/writes) | ❌ Not started | Port `docs/index.html` 5 tabs/sheets to Wagmi reads/writes against Stage 2 deployments          |
-| 4   | Real strategy end-to-end     | ❌ Not started | `Mock → Aave V3` swap via `IYieldStrategy`, Base Sepolia deploy + verify                        |
+| 4   | Real strategy end-to-end     | 🔶 Contract done | `AaveStrategy` fork-tested on Base Sepolia; live deploy + UI E2E pending (needs Stage 3) |
 | 5   | Harden, polish, submit       | ❌ Not started | Invariant tests, mobile pass, tx states, architecture slide, pitch, backup demo                 |
 
 ## Stage 1 — Foundation ✅
@@ -55,10 +55,17 @@ Done (`forge 1.8.3`, `contracts/`):
       contribute/withdraw sheets, create-pool sliders, streak + milestone overlays
 - [ ] Replace mock JS state with Wagmi reads + event history; ETH on-chain, ZAR display-only
 
-## Stage 4 — Real strategy ❌
+## Stage 4 — Real strategy 🔶 (contract done, live deploy pending)
 
-- [ ] `AaveStrategy: IYieldStrategy` (wstETH → Aave V3, Base Sepolia)
-- [ ] Deploy + verify on Base Sepolia; end-to-end deposit → yield → withdraw
+- [x] `AaveStrategy: IYieldStrategy` — ETH → WETHGateway → aWETH (Base Sepolia:
+      provider `0x6f7E…1997`, gateway `0x63bB…198`, aWETH `0xFBcD…96e3`);
+      Pool resolved dynamically from provider; `onlyPool` fund movement
+- [x] Fork-tested on Base Sepolia (`--fork-url https://sepolia.base.org`):
+      supply → 30d → full exit returns principal (Aave dust ~gwei stays pooled);
+      testnet WETH utilization ≈ 0 so no measurable interest — no-loss asserted instead
+- [x] `script/DeployAave.s.sol` ready for live broadcast
+- [ ] Live Base Sepolia deploy + verify (needs funded testnet key)
+- [ ] UI end-to-end (needs Stage 3 pages)
 
 ## Stage 5 — Polish & submit ❌
 
