@@ -1,32 +1,18 @@
-# contracts — Foundry workspace (Stage 1 shell)
+# contracts — Foundry workspace (Stage 2 done, 13/13 tests green)
 
-Solidity `0.8.24`, OpenZeppelin via `lib/` (installed in Stage 2).
+Solidity `0.8.24`, OpenZeppelin (`lib/openzeppelin-contracts`) + `forge-std` vendored.
+Toolchain: forge 1.8.3 via foundryup (`~/.foundry/bin`).
 
-## Install forge (Windows)
-
-Foundry has no native `forge.exe` on this machine yet. Options:
-
-```powershell
-# 1) via Foundryup under Git Bash (recommended)
-"C:\Program Files\Git\bin\bash.exe" -lc "curl -L https://foundry.paradigm.xyz | bash && foundryup"
-
-# 2) or download nightly win64 bundle from
-#    https://github.com/foundry-rs/foundry/releases and add to PATH
-forge --version
-```
-
-## Stage 2 setup (not yet run)
+## Commands
 
 ```powershell
 cd contracts
-forge install OpenZeppelin/openzeppelin-contracts --no-commit
-forge install foundry-rs/forge-std --no-commit
 forge build
 forge test
 ```
 
-Expected Stage 1 result once forge exists: `forge build` compiles
-`IYieldStrategy`, `GroupStakingPool` (stub), `PoolFactory` (stub).
+`script/Deploy.s.sol` deploys `MockYieldStrategy` + `PoolFactory`
+(Stage 4 adds the Aave strategy + Base Sepolia broadcast).
 
 ## Env
 

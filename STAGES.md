@@ -6,7 +6,7 @@
 | #   | Stage                        | Status         | Notes                                                                                       |
 | --- | ---------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
 | 1   | Foundation                   | ✅ Done        | Repo layout, Foundry shell + `IYieldStrategy`, Next.js shell, Base Sepolia wagmi config, `tsc` green |
-| 2   | Core pool accounting         | ❌ Not started | `GroupStakingPool` shares/deposit/withdraw/events, `PoolFactory`, `MockYieldStrategy`, Foundry tests |
+| 2   | Core pool accounting         | ✅ Done        | `GroupStakingPool` + `PoolFactory` + `MockYieldStrategy`, 13/13 Foundry tests green (forge 1.8.3) |
 | 3   | Frontend (live reads/writes) | ❌ Not started | Port `docs/index.html` 5 tabs/sheets to Wagmi reads/writes against Stage 2 deployments          |
 | 4   | Real strategy end-to-end     | ❌ Not started | `Mock → Aave V3` swap via `IYieldStrategy`, Base Sepolia deploy + verify                        |
 | 5   | Harden, polish, submit       | ❌ Not started | Invariant tests, mobile pass, tx states, architecture slide, pitch, backup demo                 |
@@ -31,15 +31,23 @@ Outstanding (non-blocking for Stage 2 start):
 - [ ] `next build` final green — dependency tree was repaired after
       interrupted installs; re-run `npm run build` in `web/` to confirm
 
-## Stage 2 — Core pool accounting ❌
+## Stage 2 — Core pool accounting ✅
 
-- [ ] `GroupStakingPool`: proportional shares (`shares = deposit × totalShares / totalValue`),
-      `ReentrancyGuard`, no admin custody, no time-weighting (v1)
-- [ ] Events: `GroupCreated`, `MemberJoined`, `Deposited`, `Withdrawn`, `StrategyUpdated`
-- [ ] `PoolFactory.createGroup(name)` + `MockYieldStrategy` (+10% fake yield)
-- [ ] Tests: Alice 1 ETH + Bob 3 ETH → 25/75%; +0.4 yield → 1.1/3.3;
-      pro-rata withdraw; fuzz rounding
-- [ ] `forge build` + `forge test` green
+Done (`forge 1.8.3`, `contracts/`):
+
+- [x] `GroupStakingPool`: proportional shares, `ReentrancyGuard`,
+      checks-effects-interactions, creator-only `setStrategy` (narrow power),
+      zero-address guards, no time-weighting/fees in v1
+- [x] Accounting fix found by tests: `deposit()` excludes `msg.value` from
+      pre-deposit valuation (value is already in `pool.balance` on entry)
+- [x] Events: `MemberJoined`, `Deposited`, `Withdrawn`, `StrategyUpdated`, `GroupCreated`
+- [x] `PoolFactory.createGroup(name, strategy)` + registry (`isPool`, `allPools`)
+- [x] `MockYieldStrategy`: 1:1 custody, `donateYield` simulates returns,
+      `onlyPool` withdrawals, one-time pool binding
+- [x] 13/13 tests green: 1:1 first deposit, Alice 1 + Bob 3 → 25/75%,
+      +0.4 yield → 1.1/3.3, pro-rata exit, access-control reverts,
+      fuzz full-exit leaves ≤2 wei dust (256 runs)
+- [x] `forge build` clean (lint warnings only); `script/Deploy.s.sol` deploys factory + mock
 
 ## Stage 3 — Frontend ❌
 
