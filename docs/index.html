@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Umoya · Lovable Redesign</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ===== NATIVE VARIABLES & RESET ===== */
+    :root {
+      --bg-body: #09090b; 
+      --bg-app: #F5F7FA;
+      --bg-card: #FFFFFF;
+      --primary: #30D158; /* Lovable green */
+      --primary-light: #E8F8EE;
+      --text-main: #111827;
+      --text-muted: #6B7280;
+      --text-light: #9CA3AF;
+      --border: #F3F4F6;
+      --btn-dark: #1C1C1E;
+      --radius-sm: 12px;
+      --radius-md: 20px;
+      --radius-lg: 24px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-body); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; color: var(--text-main); }
+
+    /* ===== PHONE FRAME ===== */
+    .phone {
+      width: 100%; max-width: 390px; height: 844px;
+      background: var(--bg-app); border-radius: 50px; position: relative;
+      overflow: hidden; box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6), inset 0 0 0 8px #1e293b, inset 0 0 0 10px #334155;
+      display: flex; flex-direction: column;
+    }
+
+    /* Soft top-left green gradient */
+    .top-gradient {
+      position: absolute; top: -50px; left: -50px; width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(200, 245, 215, 0.8) 0%, rgba(245, 247, 250, 0) 70%);
+      pointer-events: none; z-index: 1;
+    }
+
+    /* ===== APP SHELL ===== */
+    .app-shell { position: absolute; inset: 0; display: flex; flex-direction: column; z-index: 2; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.4s ease; }
+    .app-shell.modal-open { transform: scale(0.92) translateY(16px); border-radius: 32px; overflow: hidden;}
+
+    /* ===== HEADER ===== */
+    .app-header { padding: 60px 24px 20px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; position: relative; }
+    .header-text { display: flex; flex-direction: column; gap: 4px; }
+    .header-greeting { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; letter-spacing: -0.2px; }
+    .header-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main); }
+    .header-avatar { width: 44px; height: 44px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* ===== SCROLL CONTENT & TABS ===== */
+    .scroll-content { flex: 1; overflow-y: auto; padding: 0 20px 120px; scrollbar-width: none; position: relative; z-index: 10; }
+    .scroll-content::-webkit-scrollbar { display: none; }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; animation: fadeUp 0.4s forwards; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ===== NATIVE CARD STYLES ===== */
+    .card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 20px; box-shadow: 0 8px 24px -4px rgba(0,0,0,0.03); margin-bottom: 20px; }
+
+    /* ===== TAB 1: TODAY ===== */
+    .hero-balance-card { padding: 24px; }
+    .hbc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .hbc-label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .hbc-growth { font-size: 0.75rem; font-weight: 700; color: var(--primary); }
+    .hbc-amount { font-size: 2.8rem; font-weight: 800; letter-spacing: -1.5px; color: var(--text-main); margin-bottom: 4px; }
+    .hbc-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px; }
+    
+    .hbc-progress-text { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+    .hbc-progress-track { height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; }
+    .hbc-progress-fill { height: 100%; background: var(--primary); border-radius: 4px; width: 75%; transition: width 0.5s ease; }
+
+    .main-actions { display: flex; gap: 12px; margin-bottom: 20px; }
+    .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 18px; border-radius: 20px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; font-family: inherit; transition: transform 0.15s; }
+    .action-btn:active { transform: scale(0.96); }
+    .btn-contribute { background: var(--btn-dark); color: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .btn-contribute i { color: var(--primary); }
+    .btn-withdraw { background: var(--bg-card); color: var(--text-main); box-shadow: 0 8px 24px -4px rgba(0,0,0,0.04); }
+    .btn-withdraw i { color: var(--primary); }
+
+    .section-head-small { display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 0 4px 8px; letter-spacing: 0.5px; }
+    .up-next-row { display: flex; align-items: center; gap: 12px; }
+    .icon-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+    .icon-circle.green { background: var(--primary-light); color: var(--primary); }
+    .icon-circle.gray { background: #F3F4F6; color: var(--text-main); }
+    .up-next-info { flex: 1; }
+    .up-next-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
+    .up-next-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .up-next-amount { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+
+    .growth-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .growth-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .growth-badge { background: var(--primary-light); color: var(--primary); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+    .chart-wrap { position: relative; height: 100px; margin: 10px 0; }
+    .chart-svg { width: 100%; height: 100%; overflow: visible; }
+    .chart-line { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .chart-area { fill: url(#areaGradient); }
+    .chart-months { display: flex; justify-content: space-between; font-size: 0.65rem; font-weight: 600; color: var(--text-light); margin-top: 5px; }
+    
+    .timeframe-row { display: flex; gap: 8px; margin-top: 16px; background: var(--bg-app); padding: 4px; border-radius: 16px; }
+    .tf-pill { flex: 1; text-align: center; font-size: 0.75rem; font-weight: 600; padding: 8px 0; border-radius: 12px; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+    .tf-pill.active { background: var(--bg-card); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin: 24px 4px 12px; }
+    .section-header h3 { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px; }
+    .section-header a { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; text-decoration: none; }
+
+    .activity-list { background: var(--bg-card); border-radius: var(--radius-lg); padding: 0; box-shadow: 0 8px 24px -4px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 20px;}
+    .activity-item { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;}
+    .activity-item:active { background: #F9FAFB; }
+    .activity-item:last-child { border-bottom: none; }
+    .act-title { font-size: 0.9rem; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
+    .act-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .act-val { font-size: 0.9rem; font-weight: 700; }
+    .act-val.positive { color: var(--primary); }
+    .act-val.neutral { color: var(--text-muted); font-weight: 500; font-size: 0.8rem; }
+
+    /* ===== OTHER TABS ===== */
+    .search-bar { display: flex; align-items: center; gap: 10px; background: var(--bg-card); border-radius: 16px; padding: 14px 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .search-bar input { border: none; background: transparent; font-size: 0.95rem; font-family: inherit; width: 100%; outline: none; }
+    
+    .pool-item { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: 0 4px 12px rgba(0,0,0,0.02); margin-bottom: 12px; cursor: pointer; transition: transform 0.15s; }
+    .pool-item:active { transform: scale(0.98); }
+    .pool-avatar { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #fff; position: relative; }
+    .pool-avatar.g1 { background: linear-gradient(135deg, #10b981, #059669); }
+    .pool-avatar.g2 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .pool-avatar.g3 { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .pool-body { flex: 1; }
+    .pool-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .pool-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.3px; }
+    .pool-time { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+    .pool-msg { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+    .pool-progress-mini { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .pool-progress-bar { flex: 1; height: 6px; background: #F3F4F6; border-radius: 10px; }
+    .pool-progress-fill { height: 100%; background: var(--primary); border-radius: 10px; }
+    
+    .streak-banner { display: flex; align-items: center; gap: 14px; background: #FFFBEB; border: 1px solid #FEF3C7; border-radius: var(--radius-lg); padding: 16px; margin-bottom: 20px; }
+    .streak-flame { width: 44px; height: 44px; border-radius: 12px; background: #F59E0B; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; }
+    
+    /* ===== FLOATING ISLAND TAB BAR ===== */
+    .tab-bar {
+      position: absolute; bottom: 24px; left: 24px; right: 24px; height: 72px;
+      background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-radius: 36px; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15); border: 1px solid rgba(255, 255, 255, 0.6);
+      display: flex; justify-content: space-around; align-items: center; z-index: 50; padding: 0 8px;
+    }
+    .tab-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-light); cursor: pointer; transition: color 0.3s ease; width: 56px; height: 56px; border-radius: 20px; }
+    .tab-item i { font-size: 1.25rem; transition: transform 0.15s; }
+    .tab-item span { font-size: 0.65rem; font-weight: 600; }
+    .tab-item.active { color: var(--primary); }
+    .tab-item:active i { transform: scale(0.85); }
+
+    /* ===== MODAL SHEETS ===== */
+    .sheet-overlay { position: absolute; inset: 0; background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(4px); z-index: 80; opacity: 0; visibility: hidden; transition: 0.4s; border-radius: 44px; }
+    .sheet-overlay.show { opacity: 1; visibility: visible; }
+    .sheet { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: 32px 32px 44px 44px; padding: 24px; z-index: 90; transform: translateY(100%); transition: 0.4s cubic-bezier(0.22, 1, 0.36, 1); max-height: 85%; overflow-y: auto; }
+    .sheet.show { transform: translateY(0); }
+    .sheet-handle { width: 40px; height: 5px; background: #E5E7EB; border-radius: 10px; margin: 0 auto 20px; }
+    .sheet-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .sheet-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px; }
+    
+    .amount-display { background: var(--bg-app); border-radius: 24px; padding: 24px; text-align: center; margin-bottom: 20px; }
+    .amount-display .currency { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+    .amount-display .amount { font-size: 2.8rem; font-weight: 800; letter-spacing: -1px; color: var(--text-main); margin-top: 8px; }
+    
+    .quick-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+    .quick-amt { padding: 14px 0; background: var(--bg-app); border-radius: 16px; font-size: 0.9rem; font-weight: 700; text-align: center; cursor: pointer; transition: 0.2s; color: var(--text-main); }
+    .quick-amt.selected { background: var(--btn-dark); color: #fff; }
+
+    .btn-primary { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--btn-dark); color: #fff; font-size: 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-family: inherit; cursor: pointer; }
+    .btn-secondary { width: 100%; padding: 18px; border-radius: 20px; border: none; background: var(--bg-app); color: var(--text-main); font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+
+    /* Form Elements for Create Pool (Sliders with Min/Max labels) */
+    .form-group { margin-bottom: 24px; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+    .form-input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-app); font-family: inherit; font-size: 1rem; font-weight: 600; outline: none; margin-bottom: 12px;}
+    
+    .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .slider-value { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+    
+    .custom-slider {
+      -webkit-appearance: none; width: 100%; height: 8px; border-radius: 4px;
+      background: linear-gradient(to right, var(--primary) 18.3%, #E5E7EB 18.3%); 
+      outline: none; transition: background 0.1s;
+    }
+    .custom-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%;
+      background: #fff; border: 3px solid var(--primary); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    
+    .slider-labels { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-weight: 600; }
+
+    #poolPeriodSlider { background: linear-gradient(to right, var(--primary) 45%, #E5E7EB 45%); }
+
+    /* ===== CELEBRATION & MILESTONE ===== */
+    .celebration { position: absolute; inset: 0; z-index: 100; pointer-events: none; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 44px; }
+    .celebration-card { background: #fff; border-radius: 32px; padding: 32px; text-align: center; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.2); transform: scale(0.5); opacity: 0; transition: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 3; }
+    .celebration-card.show { transform: scale(1); opacity: 1; }
+    .celebration-check { width: 80px; height: 80px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2.5rem; margin: 0 auto 16px; }
+
+    .milestone-overlay { position: absolute; inset: 0; z-index: 110; background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.4s; border-radius: 44px; }
+    .milestone-overlay.show { opacity: 1; visibility: visible; pointer-events: auto; }
+    .milestone-content { text-align: center; padding: 32px; color: #fff; z-index: 5; }
+    .level-badge-core { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #F59E0B, #EA580C); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 32px; box-shadow: 0 20px 40px -10px rgba(234, 88, 12, 0.5); border: 4px solid #fff; transform: scale(0); transition: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .milestone-overlay.show .level-badge-core { transform: scale(1); }
+    .level-badge-label { font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; opacity: 0.9; }
+    .level-badge-number { font-size: 4rem; font-weight: 800; line-height: 1; }
+    .milestone-headline { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+    
+    .toast { position: absolute; top: 60px; left: 50%; transform: translateX(-50%) translateY(-20px); background: var(--btn-dark); color: #fff; padding: 14px 24px; border-radius: 30px; font-size: 0.9rem; font-weight: 600; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.3); z-index: 999; opacity: 0; visibility: hidden; transition: 0.4s; display: flex; align-items: center; gap: 10px; }
+    .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+    .confetti { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: fall linear forwards; }
+    @keyframes fall { to { transform: translateY(900px) rotate(720deg); } }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    
+    <div class="top-gradient"></div>
+
+    <!-- APP SHELL -->
+    <div class="app-shell" id="appShell">
+      
+      <!-- HEADER -->
+      <div class="app-header">
+        <div class="header-text">
+          <div class="header-greeting">Sawubona, Sabelo</div>
+          <div class="header-title">Your stokvels</div>
+        </div>
+        <div class="header-avatar">S</div>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="scroll-content">
+        
+        <!-- ===== TAB 1: TODAY ===== -->
+        <div class="tab-page active" id="page-today">
+          <div class="card hero-balance-card">
+            <div class="hbc-top">
+              <span class="hbc-label">TOTAL BALANCE</span>
+              <span class="hbc-growth">+14.2% this month</span>
+            </div>
+            <div class="hbc-amount" id="heroBalance">R 51,390</div>
+            <div class="hbc-sub">Across 3 active stokvels</div>
+            <div class="hbc-progress-text">
+              <span>March contribution</span>
+              <span>R 1,500 of R 2 000</span>
+            </div>
+            <div class="hbc-progress-track">
+              <div class="hbc-progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="main-actions">
+            <button class="action-btn btn-contribute" id="depositBtn">
+              <i class="fas fa-plus"></i> Contribute
+            </button>
+            <button class="action-btn btn-withdraw" id="withdrawBtn">
+              <i class="fas fa-arrow-down"></i> Withdraw
+            </button>
+          </div>
+
+          <div class="section-head-small">
+            <span>UP NEXT</span>
+            <span>in 6 days</span>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div class="up-next-row">
+              <div class="icon-circle green">U</div>
+              <div class="up-next-info">
+                <div class="up-next-title">Umoya Main Pool</div>
+                <div class="up-next-sub">R 2 000 due · 12 members</div>
+              </div>
+              <div class="up-next-amount">R 2 000</div>
+            </div>
+          </div>
+
+          <div class="section-head-small" style="margin-top: 24px;">
+            <span>PORTFOLIO GROWTH</span>
+          </div>
+          <div class="card" style="padding: 20px;">
+            <div class="growth-header">
+              <div><div class="growth-label">ALL-TIME YIELD</div></div>
+              <div class="growth-badge"><i class="fas fa-arrow-up"></i> +R 2,658</div>
+            </div>
+            <div class="chart-wrap">
+              <svg class="chart-svg" viewBox="0 0 320 100" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#30D158" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="#30D158" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path class="chart-area" d="M 0 85 L 40 80 L 80 70 L 120 65 L 160 50 L 200 40 L 240 30 L 280 15 L 320 10 L 320 100 L 0 100 Z"/>
+                <path class="chart-line" d="M 0 85 L 40 80 L 80 70 L 120 65 L 160 50 L 200 40 L 240 30 L 280 15 L 320 10"/>
+              </svg>
+            </div>
+            <div class="chart-months">
+              <span>JAN</span><span>APR</span><span>JUL</span><span>OCT</span><span style="color:var(--primary);">NOW</span>
+            </div>
+            <div class="timeframe-row" id="timeframeRow">
+              <div class="tf-pill">1M</div><div class="tf-pill">3M</div>
+              <div class="tf-pill active">1Y</div><div class="tf-pill">ALL</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 2: STOKVELS ===== -->
+        <div class="tab-page" id="page-stokvels">
+          <div class="section-header" style="margin-top: 0;">
+            <h3>My Stokvels</h3>
+            <a href="#" id="createPoolLink"><i class="fas fa-plus"></i> New</a>
+          </div>
+          <div class="search-bar">
+            <i class="fas fa-search" style="color:var(--text-muted);"></i>
+            <input type="text" id="poolSearchInput" placeholder="Search pools or members…">
+          </div>
+
+          <div class="pool-list" id="poolList">
+            <div class="pool-item" data-pool="umoya-main">
+              <div class="pool-avatar g1"><i class="fas fa-hand-holding-heart"></i></div>
+              <div class="pool-body">
+                <div class="pool-top-row"><span class="pool-name">Umoya Main Pool</span><span class="pool-time">09:41</span></div>
+                <div class="pool-msg">Thandi: Deposit confirmed ✅</div>
+                <div class="pool-progress-mini"><div class="pool-progress-bar"><div class="pool-progress-fill" style="width:68%"></div></div></div>
+              </div>
+            </div>
+            <div class="pool-item" data-pool="durban-savers">
+              <div class="pool-avatar g2"><i class="fas fa-umbrella-beach"></i></div>
+              <div class="pool-body">
+                <div class="pool-top-row"><span class="pool-name">Durban Savers</span><span class="pool-time">Yesterday</span></div>
+                <div class="pool-msg">Naledi: Goal 82% reached 🎉</div>
+                <div class="pool-progress-mini"><div class="pool-progress-bar"><div class="pool-progress-fill" style="width:82%"></div></div></div>
+              </div>
+            </div>
+            <div class="pool-item" data-pool="joburg-builders">
+              <div class="pool-avatar g3"><i class="fas fa-city"></i></div>
+              <div class="pool-body">
+                <div class="pool-top-row"><span class="pool-name">Joburg Builders</span><span class="pool-time">Tue</span></div>
+                <div class="pool-msg">Sipho: Yield stacking live 📈</div>
+                <div class="pool-progress-mini"><div class="pool-progress-bar"><div class="pool-progress-fill" style="width:45%"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 3: TRANSFER ===== -->
+        <div class="tab-page" id="page-transfer">
+          <div class="section-header" style="margin-top: 0;">
+            <h3>Personal Wallet</h3>
+          </div>
+          <div class="card hero-balance-card">
+            <div class="hbc-top">
+              <span class="hbc-label">AVAILABLE BALANCE</span>
+            </div>
+            <div class="hbc-amount" id="transferWalletBalance">R 51,390</div>
+            <div class="hbc-sub">Ready to contribute or withdraw</div>
+            <div class="main-actions" style="margin-bottom: 0;">
+              <button class="action-btn btn-contribute" onclick="showToast('Connecting to bank...')">
+                <i class="fas fa-university"></i> Add Funds
+              </button>
+              <button class="action-btn btn-withdraw" onclick="showToast('Withdrawing to bank...')">
+                <i class="fas fa-arrow-up"></i> Withdraw
+              </button>
+            </div>
+          </div>
+
+          <div class="section-head-small" style="margin-top: 24px;"><span>LINKED ACCOUNTS</span></div>
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="activity-item">
+              <div class="icon-circle" style="background: #111827; color: #fff;"><i class="fas fa-university"></i></div>
+              <div class="up-next-info">
+                <div class="act-title">Capitec Bank</div>
+                <div class="act-sub">Savings ****4921</div>
+              </div>
+              <i class="fas fa-check-circle" style="color: var(--primary);"></i>
+            </div>
+            <div class="activity-item">
+              <div class="icon-circle gray"><i class="fas fa-plus"></i></div>
+              <div class="up-next-info"><div class="act-title">Link another account</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 4: ACTIVITY ===== -->
+        <div class="tab-page" id="page-activity">
+          <div class="section-header" style="margin-top: 0;"><h3>Smart Contract Logs</h3></div>
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="activity-item">
+              <div class="icon-circle gray" style="background:#F3F4F6;"><i class="fas fa-arrow-down"></i></div>
+              <div class="up-next-info">
+                <div class="act-title">Deposit R 2,500</div>
+                <div class="act-sub" style="font-family: monospace;">0x3f2a…c7e1</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="icon-circle gray" style="background:#E0E7FF; color: #4F46E5;"><i class="fas fa-water"></i></div>
+              <div class="up-next-info">
+                <div class="act-title">Stake · Lido</div>
+                <div class="act-sub" style="font-family: monospace;">0x9b1d…4f82</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="icon-circle green"><i class="fas fa-chart-pie"></i></div>
+              <div class="up-next-info">
+                <div class="act-title">Yield distribution</div>
+                <div class="act-sub" style="font-family: monospace;">0x7e4c…a930</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 5: PROFILE ===== -->
+        <div class="tab-page" id="page-profile">
+          <div class="section-header" style="margin-top: 0;"><h3>My Profile</h3></div>
+          <div class="streak-banner">
+            <div class="streak-flame"><i class="fas fa-fire"></i></div>
+            <div class="up-next-info">
+              <div style="font-size: 1.2rem; font-weight: 800; color: #92400E;"><span id="streakCount">7</span> month streak</div>
+              <div style="font-size: 0.8rem; font-weight: 600; color: #B45309;">Consistent saver · top 15%</div>
+            </div>
+          </div>
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="activity-item">
+              <div class="icon-circle gray"><i class="fas fa-user-circle"></i></div>
+              <div class="up-next-info"><div class="act-title">Account Details</div></div>
+              <i class="fas fa-chevron-right" style="color:var(--text-light); font-size: 0.8rem;"></i>
+            </div>
+            <div class="activity-item">
+              <div class="icon-circle gray"><i class="fas fa-shield-alt"></i></div>
+              <div class="up-next-info"><div class="act-title">Security & Privacy</div></div>
+              <i class="fas fa-chevron-right" style="color:var(--text-light); font-size: 0.8rem;"></i>
+            </div>
+            <div class="activity-item">
+              <div class="icon-circle gray"><i class="fas fa-headset"></i></div>
+              <div class="up-next-info"><div class="act-title">Support</div></div>
+              <i class="fas fa-chevron-right" style="color:var(--text-light); font-size: 0.8rem;"></i>
+            </div>
+          </div>
+          <button class="btn-secondary" style="color: #EF4444; margin-top: 10px;"><i class="fas fa-sign-out-alt"></i> Log Out</button>
+        </div>
+
+      </div>
+
+      <!-- FLOATING ISLAND TAB BAR -->
+      <div class="tab-bar">
+        <div class="tab-item active" data-tab="today"><i class="fas fa-home"></i><span>Today</span></div>
+        <div class="tab-item" data-tab="stokvels"><i class="fas fa-users"></i><span>Stokvels</span></div>
+        <div class="tab-item" data-tab="transfer"><i class="fas fa-exchange-alt"></i><span>Transfer</span></div>
+        <div class="tab-item" data-tab="activity"><i class="fas fa-clock"></i><span>Activity</span></div>
+        <div class="tab-item" data-tab="profile"><i class="fas fa-user"></i><span>Profile</span></div>
+      </div>
+
+      <!-- DEPOSIT/WITHDRAW SHEET -->
+      <div class="sheet-overlay" id="sheetOverlay"></div>
+      <div class="sheet" id="actionSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" id="sheetTitle">Contribute to pool</div>
+        <div class="sheet-subtitle" id="sheetSubtitle">Funds go directly into the smart contract</div>
+        <div class="amount-display">
+          <div class="currency">Amount in ZAR</div>
+          <div class="amount" id="amountValue">R 1,000</div>
+        </div>
+        <div class="quick-amounts" id="quickAmounts">
+          <div class="quick-amt" data-amt="250">R250</div>
+          <div class="quick-amt selected" data-amt="1000">R1k</div>
+          <div class="quick-amt" data-amt="2500">R2.5k</div>
+          <div class="quick-amt" data-amt="5000">R5k</div>
+        </div>
+        <button class="btn-primary" id="confirmAction"><i class="fas fa-arrow-down" id="confirmIcon"></i> <span id="confirmLabel">Confirm</span></button>
+        <button class="btn-secondary" id="cancelAction">Cancel</button>
+      </div>
+
+      <!-- CREATE POOL SHEET (With Enhanced Sliders) -->
+      <div class="sheet" id="createPoolSheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">Create a stokvel</div>
+        <div class="sheet-subtitle">Start a trustless pool with your community</div>
+
+        <div class="form-group">
+          <label class="form-label">Pool name</label>
+          <input class="form-input" id="newPoolName" type="text" placeholder="e.g. Family Legacy Fund">
+        </div>
+
+        <div class="form-group">
+          <div class="slider-header">
+            <span class="form-label" style="margin-bottom:0;">Monthly contribution</span>
+            <span class="slider-value" id="poolAmountVal">R 1,000</span>
+          </div>
+          <input type="range" min="100" max="5000" step="100" value="1000" class="custom-slider" id="poolAmountSlider">
+          <div class="slider-labels">
+            <span>R 100</span>
+            <span>R 5,000</span>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 32px;">
+          <div class="slider-header">
+            <span class="form-label" style="margin-bottom:0;">Lock period</span>
+            <span class="slider-value" id="poolPeriodVal">6 months</span>
+          </div>
+          <input type="range" min="1" max="12" step="1" value="6" class="custom-slider" id="poolPeriodSlider">
+          <div class="slider-labels">
+            <span>1 month</span>
+            <span>12 months</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="createPoolConfirm">Create Stokvel</button>
+        <button class="btn-secondary" id="createPoolCancel">Cancel</button>
+      </div>
+
+      <!-- CELEBRATION & MILESTONES -->
+      <div class="celebration" id="celebration"></div>
+      <div class="milestone-overlay" id="milestoneOverlay">
+        <div class="milestone-content">
+          <div class="level-badge-core">
+            <div class="level-badge-label">LEVEL</div>
+            <div class="level-badge-number" id="msLevelNumber">5</div>
+          </div>
+          <div class="milestone-headline" id="msHeadline">Level 5 unlocked!</div>
+          <div style="display:flex; justify-content:center; gap: 20px; margin: 30px 0;">
+            <div><div style="font-size:1.4rem; font-weight:800;" id="msStat1Val">R 50.2k</div><div style="font-size:0.75rem; color:#9CA3AF;">Balance</div></div>
+            <div><div style="font-size:1.4rem; font-weight:800;" id="msStat2Val">12</div><div style="font-size:0.75rem; color:#9CA3AF;">Members</div></div>
+          </div>
+          <button class="btn-primary" id="msContinue" style="background:#fff; color:#111827;">Continue</button>
+        </div>
+      </div>
+      <div class="toast" id="toast"><i class="fas fa-check-circle" style="color:var(--primary);"></i><span id="toastMsg">Success</span></div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const state = { personalBalance: 51390, poolBalance: 45820, goal: 67350, streak: 7, poolLevel: 4, poolMembers: 12 };
+
+      function formatRands(n) { return 'R ' + Math.round(n).toLocaleString('en-ZA'); }
+
+      function renderState() {
+        const balanceStr = formatRands(state.personalBalance);
+        document.getElementById('heroBalance').textContent = balanceStr;
+        document.getElementById('transferWalletBalance').textContent = balanceStr;
+        document.getElementById('streakCount').textContent = state.streak;
+      }
+      renderState();
+
+      const tabItems = document.querySelectorAll('.tab-item');
+      const pages = document.querySelectorAll('.tab-page');
+
+      tabItems.forEach(item => {
+        item.addEventListener('click', () => {
+          tabItems.forEach(t => t.classList.remove('active'));
+          pages.forEach(p => p.classList.remove('active'));
+          item.classList.add('active');
+          document.getElementById('page-' + item.getAttribute('data-tab')).classList.add('active');
+        });
+      });
+
+      const appShell = document.getElementById('appShell');
+      const overlay = document.getElementById('sheetOverlay');
+      const actionSheet = document.getElementById('actionSheet');
+      const createPoolSheet = document.getElementById('createPoolSheet');
+      
+      let currentMode = 'deposit', selectedAmount = 1000;
+
+      function openActionSheet(mode) {
+        currentMode = mode; selectedAmount = 1000;
+        document.querySelectorAll('.quick-amt').forEach(el => el.classList.toggle('selected', parseInt(el.dataset.amt) === 1000));
+        document.getElementById('sheetTitle').textContent = mode === 'deposit' ? 'Contribute' : 'Withdraw';
+        document.getElementById('confirmLabel').textContent = mode === 'deposit' ? 'Confirm contribution' : 'Confirm withdrawal';
+        document.getElementById('confirmIcon').className = mode === 'deposit' ? 'fas fa-plus' : 'fas fa-arrow-down';
+        document.getElementById('amountValue').textContent = formatRands(selectedAmount);
+        appShell.classList.add('modal-open');
+        overlay.classList.add('show'); actionSheet.classList.add('show');
+      }
+
+      function closeSheets() {
+        appShell.classList.remove('modal-open');
+        overlay.classList.remove('show'); 
+        actionSheet.classList.remove('show'); 
+        createPoolSheet.classList.remove('show');
+      }
+
+      document.getElementById('depositBtn').addEventListener('click', () => openActionSheet('deposit'));
+      document.getElementById('withdrawBtn').addEventListener('click', () => openActionSheet('withdraw'));
+      document.getElementById('cancelAction').addEventListener('click', closeSheets);
+      overlay.addEventListener('click', closeSheets);
+
+      document.getElementById('quickAmounts').addEventListener('click', (e) => {
+        const t = e.target.closest('.quick-amt'); if (!t) return;
+        document.querySelectorAll('.quick-amt').forEach(el => el.classList.remove('selected'));
+        t.classList.add('selected'); selectedAmount = parseInt(t.dataset.amt);
+        document.getElementById('amountValue').textContent = formatRands(selectedAmount);
+      });
+
+      document.getElementById('confirmAction').addEventListener('click', () => {
+        if (currentMode === 'deposit') {
+          const prevMilestone = Math.floor(state.personalBalance / 10000);
+          state.personalBalance += selectedAmount;
+          state.streak = Math.min(12, state.streak + 1);
+          closeSheets();
+          setTimeout(() => {
+            renderState(); launchCelebration(selectedAmount);
+            if (Math.floor(state.personalBalance / 10000) > prevMilestone) {
+              state.poolLevel++; setTimeout(() => launchMilestone(), 3200);
+            }
+          }, 400);
+        } else {
+          state.personalBalance = Math.max(0, state.personalBalance - selectedAmount);
+          closeSheets(); renderState(); showToast(`Withdrew ${formatRands(selectedAmount)}`);
+        }
+      });
+
+      // --- CREATE POOL & SLIDERS LOGIC ---
+      const createPoolLink = document.getElementById('createPoolLink');
+      if(createPoolLink) {
+        createPoolLink.addEventListener('click', (e) => { 
+          e.preventDefault(); appShell.classList.add('modal-open'); 
+          overlay.classList.add('show'); createPoolSheet.classList.add('show'); 
+        });
+      }
+      document.getElementById('createPoolCancel').addEventListener('click', closeSheets);
+
+      const poolAmtSlider = document.getElementById('poolAmountSlider');
+      const poolAmtVal = document.getElementById('poolAmountVal');
+      const poolPerSlider = document.getElementById('poolPeriodSlider');
+      const poolPerVal = document.getElementById('poolPeriodVal');
+
+      function updateSliderTrack(slider) {
+        const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+        slider.style.background = `linear-gradient(to right, var(--primary) ${val}%, #E5E7EB ${val}%)`;
+      }
+
+      poolAmtSlider.addEventListener('input', (e) => {
+        poolAmtVal.textContent = 'R ' + parseInt(e.target.value).toLocaleString('en-ZA');
+        updateSliderTrack(e.target);
+      });
+
+      poolPerSlider.addEventListener('input', (e) => {
+        const v = e.target.value;
+        poolPerVal.textContent = v == 1 ? '1 month' : v + ' months';
+        updateSliderTrack(e.target);
+      });
+
+      document.getElementById('createPoolConfirm').addEventListener('click', () => {
+        const name = document.getElementById('newPoolName').value.trim() || 'My New Stokvel';
+        closeSheets(); showToast(`${name} created!`);
+        document.getElementById('newPoolName').value = '';
+        poolAmtSlider.value = 1000; updateSliderTrack(poolAmtSlider); poolAmtVal.textContent = 'R 1,000';
+        poolPerSlider.value = 6; updateSliderTrack(poolPerSlider); poolPerVal.textContent = '6 months';
+      });
+
+      // --- UTILS ---
+      window.showToast = function(msg) {
+        document.getElementById('toastMsg').textContent = msg;
+        const toast = document.getElementById('toast');
+        toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2600);
+      }
+
+      function launchCelebration(amount) {
+        const cel = document.getElementById('celebration'); cel.innerHTML = '';
+        for (let i=0; i<40; i++) {
+          const c = document.createElement('div'); c.className = 'confetti';
+          c.style.left = Math.random() * 100 + '%'; c.style.top = -10 + '%';
+          c.style.background = ['#30D158', '#34d399', '#f59e0b', '#3b82f6'][Math.floor(Math.random() * 4)];
+          c.style.animationDuration = (1 + Math.random()) + 's';
+          cel.appendChild(c);
+        }
+        const card = document.createElement('div'); card.className = 'celebration-card show';
+        card.innerHTML = `<div class="celebration-check"><i class="fas fa-check"></i></div><div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;">Confirmed!</div><div style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">+ ${formatRands(amount)}</div>`;
+        cel.appendChild(card);
+        showToast(`Deposit of ${formatRands(amount)} confirmed`);
+        setTimeout(() => card.classList.remove('show'), 2000);
+        setTimeout(() => cel.innerHTML = '', 3000);
+      }
+
+      function launchMilestone() {
+        const ms = document.getElementById('milestoneOverlay');
+        document.getElementById('msLevelNumber').textContent = state.poolLevel;
+        document.getElementById('msStat1Val').textContent = 'R ' + (state.personalBalance/1000).toFixed(1) + 'k';
+        document.getElementById('msStat2Val').textContent = state.poolMembers + 1;
+        document.getElementById('msHeadline').textContent = `Level ${state.poolLevel} unlocked!`;
+        ms.classList.add('show');
+      }
+      document.getElementById('msContinue').addEventListener('click', () => document.getElementById('milestoneOverlay').classList.remove('show'));
+
+      document.getElementById('poolSearchInput').addEventListener('input', function() {
+        const q = this.value.toLowerCase().trim();
+        document.querySelectorAll('.pool-item').forEach(item => {
+          item.style.display = item.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+      });
+      
+      document.querySelectorAll('.pool-item').forEach(item => {
+        item.addEventListener('click', function() {
+          showToast('Opening stokvel...'); 
+          setTimeout(() => { state.poolLevel++; launchMilestone(); }, 600);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
