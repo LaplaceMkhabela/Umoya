@@ -13,8 +13,11 @@ export const localhost = defineChain({
 
 export const demoChain = localhost;
 
+// WalletConnect Cloud projectId. Local/dev default is a valid-format dummy
+// (WalletConnect itself won't work with it; injected wallets do).
+// Set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID from https://cloud.walletconnect.com for real use.
 const projectId =
-  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "stage1-placeholder";
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "00000000000000000000000000000000";
 
 export const wagmiConfig = getDefaultConfig({
   appName: "Umoya",

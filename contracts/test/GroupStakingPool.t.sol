@@ -22,7 +22,7 @@ contract GroupStakingPoolTest is Test {
         vm.prank(creator);
         address poolAddr = factory.createGroup("Umoya Main", address(mock));
         pool = GroupStakingPool(payable(poolAddr));
-        mock.setPoolOnce(poolAddr);
+        // Factory auto-binds the strategy 1:1 on creation (reverts otherwise).
         deal(alice, 100 ether);
         deal(bob, 100 ether);
     }

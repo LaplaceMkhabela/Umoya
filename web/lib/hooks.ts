@@ -7,6 +7,7 @@ import {
   useReadContract,
   useReadContracts,
 } from "wagmi";
+import { decodeEventLog, parseAbi } from "viem";
 import { factoryAbi } from "./abi/factoryAbi";
 import { poolAbi } from "./abi/poolAbi";
 import {
@@ -77,6 +78,12 @@ export type ActivityEvent = {
   txHash: string;
 };
 
+const poolEventsAbi = parseAbi([
+  "event Deposited(address indexed member, uint256 value, uint256 sharesMinted)",
+  "event Withdrawn(address indexed member, uint256 value, uint256 sharesBurned)",
+  "event MemberJoined(address indexed member)",
+]);
+
 /** Newest-first on-chain activity. Pass a pool to scope, omit for all pools. */
 export function useActivity(pool: HexAddress | undefined, pools: HexAddress[], nonce = 0) {
   const client = usePublicClient();
@@ -96,39 +103,40 @@ export function useActivity(pool: HexAddress | undefined, pools: HexAddress[], n
       try {
         const perPool = await Promise.all(
           targets.map(async (p) => {
-            const [deposits, withdrawals, joins] = await Promise.all([
-              client.getLogs({
-                address: p, abi: poolAbi, eventName: "Deposited",
-                fromBlock: 0n, toBlock: "latest",
-              }),
-              client.getLogs({
-                address: p, abi: poolAbi, eventName: "Withdrawn",
-                fromBlock: 0n, toBlock: "latest",
-              }),
-              client.getLogs({
-                address: p, abi: poolAbi, eventName: "MemberJoined",
-                fromBlock: 0n, toBlock: "latest",
-              }),
-            ]);
+            const logs = await client.getLogs({
+              address: p,
+              fromBlock: 0n,
+              toBlock: "latest",
+            });
             const out: ActivityEvent[] = [];
-            for (const l of deposits)
-              out.push({
-                key: `${l.transactionHash}-${l.logIndex}`, kind: "deposit", pool: p,
-                member: l.args.member, value: l.args.value,
-                blockNumber: l.blockNumber, txHash: l.transactionHash,
-              });
-            for (const l of withdrawals)
-              out.push({
-                key: `${l.transactionHash}-${l.logIndex}`, kind: "withdraw", pool: p,
-                member: l.args.member, value: l.args.value,
-                blockNumber: l.blockNumber, txHash: l.transactionHash,
-              });
-            for (const l of joins)
-              out.push({
-                key: `${l.transactionHash}-${l.logIndex}`, kind: "join", pool: p,
-                member: l.args.member,
-                blockNumber: l.blockNumber, txHash: l.transactionHash,
-              });
+            for (const l of logs) {
+              let decoded: ReturnType<typeof decodeEventLog>;
+              try {
+                decoded = decodeEventLog({
+                  abi: poolEventsAbi,
+                  data: l.data,
+                  topics: l.topics,
+                });
+              } catch {
+                continue;
+              }
+              const base = {
+                key: `${l.transactionHash}-${l.logIndex}`,
+                pool: p,
+                blockNumber: l.blockNumber,
+                txHash: l.transactionHash,
+              };
+              if (decoded.eventName === "Deposited") {
+                const a = decoded.args as { member: string; value: bigint };
+                out.push({ ...base, kind: "deposit", member: a.member, value: a.value });
+              } else if (decoded.eventName === "Withdrawn") {
+                const a = decoded.args as { member: string; value: bigint };
+                out.push({ ...base, kind: "withdraw", member: a.member, value: a.value });
+              } else {
+                const a = decoded.args as { member: string };
+                out.push({ ...base, kind: "join", member: a.member });
+              }
+            }
             return out;
           }),
         );

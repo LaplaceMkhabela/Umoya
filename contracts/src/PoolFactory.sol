@@ -7,15 +7,21 @@ import { GroupStakingPool } from "./GroupStakingPool.sol";
 contract PoolFactory {
     event GroupCreated(address indexed pool, address indexed creator, string name);
 
+    error StrategyBindFailed();
+
     address[] private _pools;
     mapping(address => bool) public isPool;
 
-    /// @notice Deploy a pool bound to `strategy`. Caller becomes pool creator (narrow strategy-swap right only).
+    /// @notice Deploy a pool bound 1:1 to `strategy`. Caller becomes pool creator.
+    /// @dev Strategies must accept `setPoolOnce(address)`; creation reverts otherwise,
+    ///      so a pool can never be deployed in an unusable (unbound) state.
     function createGroup(string calldata groupName, address strategy) external returns (address pool) {
         GroupStakingPool p = new GroupStakingPool(groupName, msg.sender, strategy);
         pool = address(p);
         _pools.push(pool);
         isPool[pool] = true;
+        (bool bound,) = strategy.call(abi.encodeWithSignature("setPoolOnce(address)", pool));
+        if (!bound) revert StrategyBindFailed();
         emit GroupCreated(pool, msg.sender, groupName);
     }
 

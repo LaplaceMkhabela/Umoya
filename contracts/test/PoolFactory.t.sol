@@ -29,6 +29,25 @@ contract PoolFactoryTest is Test {
         assertEq(abi.decode(logs[0].data, (string)), "Family Legacy Fund");
     }
 
+    function testCreateGroup_AutoBindsStrategy() public {
+        vm.prank(creator);
+        address poolAddr = factory.createGroup("Bound Pool", address(mock));
+        assertEq(mock.pool(), poolAddr);
+        // Pool is immediately usable: deposit works without manual binding.
+        deal(creator, 10 ether);
+        vm.prank(creator);
+        GroupStakingPool(payable(poolAddr)).deposit{ value: 1 ether }();
+        assertEq(GroupStakingPool(payable(poolAddr)).shares(creator), 1 ether);
+    }
+
+    function testCreateGroup_RevertsWhenStrategyBound() public {
+        vm.prank(creator);
+        factory.createGroup("First", address(mock));
+        vm.prank(creator);
+        vm.expectRevert(PoolFactory.StrategyBindFailed.selector);
+        factory.createGroup("Second", address(mock));
+    }
+
     function testCreateGroup_TracksPools() public {
         vm.startPrank(creator);
         address p1 = factory.createGroup("Pool One", address(mock));
