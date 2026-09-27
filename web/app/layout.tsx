@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Providers } from "./providers";
+import { AuthProvider } from "@/components/Auth";
 import { ToastProvider } from "@/components/Toast";
 import { Nav } from "@/components/Nav";
 import "./globals.css";
@@ -15,12 +16,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <Providers>
+          <AuthProvider>
           <ToastProvider>
             <div className="mx-auto min-h-screen w-full max-w-md px-4 pb-28 pt-6">
               {children}
             </div>
             <Nav />
           </ToastProvider>
+          </AuthProvider>
         </Providers>
       </body>
     </html>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useAccount } from "wagmi";
+import Link from "next/link";
+import { AuthButton, isAuthConfigured } from "@/components/Auth";
 import { fmtEth, shortAddress } from "@/lib/format";
 import { useActivity, usePoolAddresses, usePoolSummary, type HexAddress } from "@/lib/hooks";
 
@@ -27,7 +29,17 @@ export default function ProfilePage() {
 
   return (
     <main className="flex flex-col gap-4">
-      <h1 className="text-2xl font-extrabold tracking-tight">My Profile</h1>
+      <div className="flex items-end justify-between">
+        <h1 className="text-2xl font-extrabold tracking-tight">My Profile</h1>
+        <AuthButton />
+      </div>
+      {!isAuthConfigured && (
+        <p className="px-1 text-xs text-gray-500">
+          Email login disabled — add Clerk keys (see{" "}
+          <Link href="/sign-up" className="font-bold text-umoya">Create account</Link>) to
+          enable registration, verification and password reset.
+        </p>
+      )}
       <div className="rounded-3xl bg-amber-50 p-4">
         <div className="text-xl font-extrabold text-amber-900">
           {joinedPools.size} {joinedPools.size === 1 ? "stokvel" : "stokvels"} joined

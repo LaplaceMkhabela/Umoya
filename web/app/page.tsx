@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { DepositSheet, WithdrawSheet } from "@/components/Sheets";
+import { AuthButton } from "@/components/Auth";
 import { useToast } from "@/components/Toast";
 import {
   SUPPORTED_CHAIN_IDS,
@@ -45,7 +46,10 @@ export default function Home() {
           </p>
           <h1 className="text-2xl font-extrabold tracking-tight">Your stokvels</h1>
         </div>
-        <ConnectButton showBalance={false} />
+        <div className="flex flex-col items-end gap-2">
+          <ConnectButton showBalance={false} />
+          <AuthButton />
+        </div>
       </div>
 
       {wrongNetwork && (
