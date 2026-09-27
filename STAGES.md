@@ -7,7 +7,7 @@
 | --- | ---------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
 | 1   | Foundation                   | ✅ Done        | Repo layout, Foundry shell + `IYieldStrategy`, Next.js shell, Base Sepolia wagmi config, `tsc` green |
 | 2   | Core pool accounting         | ✅ Done        | `GroupStakingPool` + `PoolFactory` + `MockYieldStrategy`, 13/13 Foundry tests green (forge 1.8.3) |
-| 3   | Frontend (live reads/writes) | ❌ Not started | Port `docs/index.html` 5 tabs/sheets to Wagmi reads/writes against Stage 2 deployments          |
+| 3   | Frontend (live reads/writes) | ✅ Running    | All pages live on `http://localhost:3000` vs anvil; wallet stack pinned coherent; `next build` green |
 | 4   | Real strategy end-to-end     | 🔶 Contract done | `AaveStrategy` fork-tested on Base Sepolia; live deploy + UI E2E pending (needs Stage 3) |
 | 5   | Harden, polish, submit       | ❌ Not started | Invariant tests, mobile pass, tx states, architecture slide, pitch, backup demo                 |
 
@@ -49,11 +49,17 @@ Done (`forge 1.8.3`, `contracts/`):
       fuzz full-exit leaves ≤2 wei dust (256 runs)
 - [x] `forge build` clean (lint warnings only); `script/Deploy.s.sol` deploys factory + mock
 
-## Stage 3 — Frontend ❌
+## Stage 3 — Frontend ✅ (running on localhost:3000)
 
-- [ ] Port `docs/index.html`: Today / Stokvels / Transfer / Activity / Profile,
-      contribute/withdraw sheets, create-pool sliders, streak + milestone overlays
-- [ ] Replace mock JS state with Wagmi reads + event history; ETH on-chain, ZAR display-only
+- [x] Wagmi localhost (31337) + Base Sepolia config; ABIs exported from forge artifacts
+- [x] Pages: Today (position + sheets + activity), Stokvels (search + create),
+      Pool detail (value/share/withdraw/activity), Transfer, Activity (event logs),
+      Profile (on-chain stats) + bottom tab bar, toasts
+- [x] Wallet stack pinned coherent (wagmi 2.12.11 / viem 2.21.19 / rainbowkit 2.2.4);
+      `tsc` + `next build` green; production server serves HTTP 200
+- [ ] New pools via UI need per-pool strategy deploy (factory enforces 1:1 binding;
+      redeploy + UI two-step pending)
+- [ ] Real WalletConnect projectId for non-injected wallets (dummy in `.env.local`)
 
 ## Stage 4 — Real strategy 🔶 (contract done, live deploy pending)
 
