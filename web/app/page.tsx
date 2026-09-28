@@ -6,6 +6,7 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
 import { DepositSheet, WithdrawSheet } from "@/components/Sheets";
 import { AuthButton } from "@/components/Auth";
+import { Onboarding } from "@/components/Onboarding";
 import { useToast } from "@/components/Toast";
 import {
   SUPPORTED_CHAIN_IDS,
@@ -39,6 +40,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col gap-4">
+      <Onboarding />
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium text-gray-500">
