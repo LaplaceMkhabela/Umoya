@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { isAuthConfigured } from "./Auth";
 
 const SEEN_KEY = "umoya-onboarded-v1";
 
@@ -104,7 +103,7 @@ export function Onboarding() {
               onClick={finish}
               className="w-full rounded-2xl bg-gray-900 p-4 text-center text-sm font-bold text-white"
             >
-              Create account{isAuthConfigured ? "" : " (setup needed)"}
+              Create account
             </Link>
             <Link
               href="/sign-in"

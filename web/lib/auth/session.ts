@@ -44,10 +44,13 @@ export function sessionCookieOptions(): {
   path: string;
   maxAge: number;
 } {
+  // Secure cookies are rejected over plain HTTP, so only set the flag
+  // when the app URL itself is https (local dev stays http).
+  const https = (process.env.NEXT_PUBLIC_APP_URL ?? "").startsWith("https://");
   return {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: https,
     path: "/",
     maxAge: MAX_AGE_SECONDS,
   };

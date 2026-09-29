@@ -1,27 +1,22 @@
 import { NextResponse } from "next/server";
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import type { NextRequest } from "next/server";
+import { SESSION_COOKIE, verifySessionToken } from "./lib/auth/session";
 
-const isProtectedRoute = createRouteMatcher(["/profile(.*)"]);
-
-const hasClerkSecret = (process.env.CLERK_SECRET_KEY ?? "").startsWith("sk_");
-
-function passthrough() {
+// Custom auth: JWT in an httpOnly cookie. /profile requires sign-in.
+export async function middleware(req: NextRequest) {
+  if (!req.nextUrl.pathname.startsWith("/profile")) {
+    return NextResponse.next();
+  }
+  const token = req.cookies.get(SESSION_COOKIE)?.value;
+  const claims = token ? await verifySessionToken(token) : null;
+  if (!claims) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/sign-in";
+    return NextResponse.redirect(url);
+  }
   return NextResponse.next();
 }
 
-// Without keys the middleware passes everything through (wallet-only mode).
-// With keys, /profile requires sign-in; Clerk hosts verification + reset flows.
-// NOTE: clerkMiddleware() is only constructed when a secret exists —
-// constructing it without one throws at module load.
-export default hasClerkSecret
-  ? clerkMiddleware((auth, req) => {
-      if (isProtectedRoute(req)) auth().protect();
-    })
-  : passthrough;
-
 export const config = {
-  matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/profile/:path*"],
 };
